@@ -4,18 +4,12 @@ using Xunit;
 
 namespace AdventOfCode.Tests
 {
-    public class ExpenseReport
+    public class ExpenseReportFacts
     {
         [Theory, MemberData(nameof(Input))]
         public void Find2020_finds_the_items(IEnumerable<int> input, IList<int> expected)
         {
-            Assert.Equal(expected.OrderBy(i => i), Find2020(input).OrderBy(i => i));
-        }
-
-        private IEnumerable<int> Find2020(IEnumerable<int> input)
-        {
-            var inputList = input.ToList();
-            return inputList.SelectMany(i => inputList.Where(j => 2020 - i - j == 0)).Take(2);
+            Assert.Equal(expected.OrderBy(i => i), new ExpenseReport().Find2020(input).OrderBy(i => i));
         }
 
         public static IEnumerable<object[]> Input
