@@ -6,10 +6,16 @@ namespace AdventOfCode.Tests
 {
     public class ExpenseReportFacts
     {
-        [Theory, MemberData(nameof(Input))]
-        public void Find2020_finds_the_items(IEnumerable<int> input, IList<int> expected)
+        [Theory, MemberData(nameof(Inputx2))]
+        public void Find2020_finds_the_two_items(IEnumerable<int> input, IList<int> expected)
         {
             Assert.Equal(expected.OrderBy(i => i), new ExpenseReport().Find2020(input).OrderBy(i => i));
+        }
+
+        [Theory, MemberData(nameof(Inputx3))]
+        public void Find2020_finds_the_three_items(IEnumerable<int> input, IList<int> expected)
+        {
+            Assert.Equal(expected.OrderBy(i => i), new ExpenseReport().Find2020(input, 3).OrderBy(i => i));
         }
 
         [Fact]
@@ -22,7 +28,7 @@ namespace AdventOfCode.Tests
             Assert.Equal(252724, answer);
         }
 
-        public static IEnumerable<object[]> Input
+        public static IEnumerable<object[]> Inputx2
         {
             get
             {
@@ -72,6 +78,60 @@ namespace AdventOfCode.Tests
                 {
                     new[] { 564, 979, 366, 299, 675, 1456 },
                     new[] { 564, 1456 }
+                };
+            }
+        }
+
+        public static IEnumerable<object[]> Inputx3
+        {
+            get
+            {
+                yield return new object[]
+                {
+                    new[] { 1721, 979, 366, 299, 675, 1456 },
+                    new [] { 979, 366, 675 }
+                };
+
+                yield return new object[]
+                {
+                    new[] { 1010, 505, 505, 366, 299, 675, 1456 },
+                    new[] { 1010, 505, 505 }
+                };
+
+                yield return new object[]
+                {
+                    new[] { 2018, 1, 1, 366, 299, 675, 1456 },
+                    new[] { 2018, 1, 1 }
+                };
+
+                yield return new object[]
+                {
+                    new[] { 2020, 0, 0, 366, 299, 675, 1456 },
+                    new[] { 2020, 0, 0 }
+                };
+
+                yield return new object[]
+                {
+                    new[] { 1355, 979, 366, 299, 675, 1456 },
+                    new[] { 1355, 366, 299 }
+                };
+
+                yield return new object[]
+                {
+                    new[] { 198, 979, 366, 299, 675, 1456 },
+                    new[] { 198, 366, 1456 }
+                };
+
+                yield return new object[]
+                {
+                    new[] { 265, 979, 366, 299, 675, 1456 },
+                    new[] { 265, 299, 1456 }
+                };
+
+                yield return new object[]
+                {
+                    new[] { 1046, 979, 366, 299, 675, 1456 },
+                    new[] { 299, 1046, 675 }
                 };
             }
         }
