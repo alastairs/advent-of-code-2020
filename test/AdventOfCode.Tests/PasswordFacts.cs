@@ -1,19 +1,64 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace AdventOfCode.Tests
 {
+    internal class PasswordPolicy
+    {
+        public PasswordPolicy(int min, int max, char c)
+        {
+            Min = min;
+            Max = max;
+            Char = c;
+        }
+
+        public bool IsValid(string password)
+        {
+            var numberOfMatchingChars = password.Count(c => c == Char);
+            return numberOfMatchingChars >= Min && numberOfMatchingChars <= Max;
+        }
+
+        internal int Min { get; init; }
+
+        internal int Max { get; init; }
+
+        internal char Char { get; init; }
+    }
+
     public class PasswordFacts
     {
         [Theory, MemberData(nameof(PasswordsAndRules))]
-        public void Foo(string inputLine, bool expected)
+        public void PasswordIsValidAccordingToRulesDefined(string inputLine, bool expected)
         {
-            bool IsValid(string inputLine)
-            {
-                return true;
-            }
+            var fields = inputLine.Split(" ");
+            var countsStrings = fields[0].Split("-");
 
-            Assert.True(expected == IsValid(inputLine));
+            var policy = new PasswordPolicy(
+                int.Parse(countsStrings[0]),
+                int.Parse(countsStrings[1]),
+                fields[1].TrimEnd(':').First());
+
+            Assert.True(expected == policy.IsValid(fields[2]));
+        }
+
+        [Fact]
+        public void CountValidPasswords()
+        {
+            var numberOfValidPasswords = PuzzleInput.Count(i =>
+            {
+                var fields = i.Split(" ");
+                var countsStrings = fields[0].Split("-");
+
+                var policy = new PasswordPolicy(
+                    int.Parse(countsStrings[0]),
+                    int.Parse(countsStrings[1]),
+                    fields[1].TrimEnd(':').First());
+
+                return policy.IsValid(fields[2]);
+            });
+
+            Assert.Equal(580, numberOfValidPasswords);
         }
 
         public static IEnumerable<object[]> PasswordsAndRules
