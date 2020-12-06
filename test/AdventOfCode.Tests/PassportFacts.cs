@@ -1,11 +1,131 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using Xunit;
 
 namespace AdventOfCode.Tests
 {
+    public class PassportIdValidator : IValidator
+    {
+        public bool Validate(string value)
+        {
+            if (value.Length != 9)
+            {
+                return false;
+            }
+
+            return int.TryParse(value, out _);
+        }
+    }
+
+    public class EyeColourValidator : IValidator
+    {
+        public EyeColourValidator(params string[] allowedValues) => AllowedValues = allowedValues;
+
+        public string[] AllowedValues { get; set; }
+
+        public bool Validate(string value)
+        {
+            return AllowedValues.Any(v => v == value);
+        }
+    }
+
+    public class HairColourValidator : IValidator
+    {
+        public bool Validate(string value)
+        {
+            if (value.Length != 7)
+            {
+                return false;
+            }
+
+            if (value[0] != '#')
+            {
+                return false;
+            }
+
+            if (int.TryParse(value.TrimStart('#'), NumberStyles.HexNumber, null, out int _))
+            {
+                return true;
+            }
+
+            return false;
+        }
+    }
+
+    public class HeightValidator : IValidator
+    {
+        public bool Validate(string value)
+        {
+            bool IsInches()
+            {
+                return value.EndsWith("in");
+            }
+
+            bool IsCentimetres()
+            {
+                return value.EndsWith("cm");
+            }
+
+            var hasUnits = IsCentimetres() || IsInches();
+            if (!hasUnits)
+            {
+                return false;
+            }
+
+            if (!int.TryParse(value.TrimEnd('i', 'n', 'c', 'm'), out int height))
+            {
+                return false;
+            }
+
+            if (IsCentimetres())
+            {
+                return height >= 150 && height <= 193;
+            }
+
+            if (IsInches())
+            {
+                return height >= 59 && height <= 76;
+            }
+
+            return false;
+        }
+    }
+
+    public class YearValidator : IValidator
+    {
+        public YearValidator(int min = int.MinValue, int max = int.MaxValue)
+        {
+            Min = min;
+            Max = max;
+        }
+
+        public int Max { get; set; }
+
+        public int Min { get; set; }
+
+        public bool Validate(string value)
+        {
+            if (value.Length != 4)
+            {
+                return false;
+            }
+
+            if (!int.TryParse(value, out var year))
+            {
+                return false;
+            }
+
+            return year >= Min && year <= Max;
+        }
+    }
+
+    public interface IValidator
+    {
+        bool Validate(string value);
+    }
+
     public class Passport
     {
         private readonly IDictionary<string, string> _fields;
@@ -49,7 +169,20 @@ namespace AdventOfCode.Tests
 
         public bool IsValid()
         {
-            return RequiredFields.All(f => _fields.ContainsKey(f));
+            if (!RequiredFields.All(f => _fields.ContainsKey(f)))
+            {
+                return false;
+            }
+
+            var validYears = new YearValidator(1920, 2002).Validate(BirthYear) &&
+                new YearValidator(2010, 2020).Validate(IssueYear) &&
+                new YearValidator(2020, 2030).Validate(ExpirationYear);
+
+            return validYears &&
+                   new HeightValidator().Validate(Height) &&
+                   new HairColourValidator().Validate(HairColour) &&
+                   new EyeColourValidator("amb", "blu", "brn", "gry", "grn", "hzl", "oth").Validate(EyeColour) &&
+                   new PassportIdValidator().Validate(PassportId);
         }
 
         public override string ToString()
@@ -94,8 +227,7 @@ namespace AdventOfCode.Tests
             }
 
             Assert.Equal(257, totalPassports);
-            Assert.True(validPassports > 205, $"Number of valid passports ({validPassports}) is too low.");
-            Assert.Equal(206, validPassports);
+            Assert.Equal(123, validPassports);
         }
 
         public IEnumerable<string> SampleInput => new[]
