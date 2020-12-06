@@ -18,14 +18,14 @@ namespace AdventOfCode.Tests
             Assert.Equal(expected.OrderBy(i => i), new ExpenseReport().Find2020(input, 3).OrderBy(i => i));
         }
 
-        [Fact]
-        public void CalculateExpenses()
+        [Theory, InlineData(2, 252724), InlineData(3, 276912720)]
+        public void CalculateExpenses(int number, int result)
         {
-            var found = new ExpenseReport().Find2020(PuzzleInput).ToList();
-            Assert.Equal(2, found.Count);
+            var found = new ExpenseReport().Find2020(PuzzleInput, number).ToList();
+            Assert.Equal(number, found.Count);
 
             var answer = found.Aggregate(1, (i, j) => i * j);
-            Assert.Equal(252724, answer);
+            Assert.Equal(result, answer);
         }
 
         public static IEnumerable<object[]> Inputx2
@@ -89,7 +89,7 @@ namespace AdventOfCode.Tests
                 yield return new object[]
                 {
                     new[] { 1721, 979, 366, 299, 675, 1456 },
-                    new [] { 979, 366, 675 }
+                    new[] { 979, 366, 675 }
                 };
 
                 yield return new object[]
