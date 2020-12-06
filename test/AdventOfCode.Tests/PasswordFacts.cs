@@ -4,9 +4,9 @@ using Xunit;
 
 namespace AdventOfCode.Tests
 {
-    internal class PasswordPolicy
+    internal class SledRentalPasswordPolicy
     {
-        public PasswordPolicy(int min, int max, char c)
+        public SledRentalPasswordPolicy(int min, int max, char c)
         {
             Min = min;
             Max = max;
@@ -26,15 +26,51 @@ namespace AdventOfCode.Tests
         internal char Char { get; init; }
     }
 
+    internal class OfficialTobogganCorporatePasswordPolicy
+    {
+        private readonly int _firstPosition;
+        private readonly int _secondPosition;
+        private readonly char _char;
+
+        public OfficialTobogganCorporatePasswordPolicy(int firstPosition, int secondPosition, char @char)
+        {
+            _firstPosition = firstPosition - 1;
+            _secondPosition = secondPosition - 1;
+            _char = @char;
+        }
+
+        public bool IsValid(string password)
+        {
+            return (password[_firstPosition] == _char &&
+                   password[_secondPosition] != _char) ||
+                (password[_firstPosition] != _char &&
+                 password[_secondPosition] == _char);
+        }
+    }
+
     public class PasswordFacts
     {
-        [Theory, MemberData(nameof(PasswordsAndRules))]
+        [Theory, MemberData(nameof(SledRentalPasswordPolicyPasswordsAndRules))]
         public void PasswordIsValidAccordingToRulesDefined(string inputLine, bool expected)
         {
             var fields = inputLine.Split(" ");
             var countsStrings = fields[0].Split("-");
 
-            var policy = new PasswordPolicy(
+            var policy = new SledRentalPasswordPolicy(
+                int.Parse(countsStrings[0]),
+                int.Parse(countsStrings[1]),
+                fields[1].TrimEnd(':').First());
+
+            Assert.True(expected == policy.IsValid(fields[2]));
+        }
+
+        [Theory, MemberData(nameof(OfficialTobogganCorporatePasswordPolicyPasswordsAndRules))]
+        public void PasswordIsValidAccordingToOfficialTobogganCorporatePasswordPolicy(string inputLine, bool expected)
+        {
+            var fields = inputLine.Split(" ");
+            var countsStrings = fields[0].Split("-");
+
+            var policy = new OfficialTobogganCorporatePasswordPolicy(
                 int.Parse(countsStrings[0]),
                 int.Parse(countsStrings[1]),
                 fields[1].TrimEnd(':').First());
@@ -50,7 +86,7 @@ namespace AdventOfCode.Tests
                 var fields = i.Split(" ");
                 var countsStrings = fields[0].Split("-");
 
-                var policy = new PasswordPolicy(
+                var policy = new OfficialTobogganCorporatePasswordPolicy(
                     int.Parse(countsStrings[0]),
                     int.Parse(countsStrings[1]),
                     fields[1].TrimEnd(':').First());
@@ -58,10 +94,12 @@ namespace AdventOfCode.Tests
                 return policy.IsValid(fields[2]);
             });
 
-            Assert.Equal(580, numberOfValidPasswords);
+            Assert.True(numberOfValidPasswords > 364, $"{numberOfValidPasswords} is too low");
+            Assert.True(numberOfValidPasswords < 706, $"{numberOfValidPasswords} is too high");
+            Assert.Equal(611, numberOfValidPasswords);
         }
 
-        public static IEnumerable<object[]> PasswordsAndRules
+        public static IEnumerable<object[]> SledRentalPasswordPolicyPasswordsAndRules
         {
             get
             {
@@ -80,6 +118,48 @@ namespace AdventOfCode.Tests
                 yield return new object[]
                 {
                     "2-9 c: ccccccccc",
+                    true
+                };
+            }
+        }
+
+        public static IEnumerable<object[]> OfficialTobogganCorporatePasswordPolicyPasswordsAndRules
+        {
+            get
+            {
+                yield return new object[]
+                {
+                    "1-3 a: abcde",
+                    true
+                };
+
+                yield return new object[]
+                {
+                    "1-3 b: cdefg",
+                    false
+                };
+
+                yield return new object[]
+                {
+                    "2-9 c: ccccccccc",
+                    false
+                };
+
+                yield return new object[]
+                {
+                    "1-7 j: vrfjljjwbsv",
+                    true
+                };
+
+                yield return new object[]
+                {
+                    "1-10 j: jjjjjjjjjjjj",
+                    false
+                };
+
+                yield return new object[]
+                {
+                    "9-13 s: jfxssvtvssvsbx",
                     true
                 };
             }
