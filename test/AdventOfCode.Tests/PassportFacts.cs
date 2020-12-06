@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Xunit;
 
 namespace AdventOfCode.Tests
@@ -7,6 +9,11 @@ namespace AdventOfCode.Tests
     public class Passport
     {
         private readonly IDictionary<string, string> _fields;
+
+        private static readonly string[] RequiredFields = new []
+        {
+            "byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"
+        }.OrderBy(f => f).ToArray();
 
         public string BirthYear => _fields["byr"];
 
@@ -31,9 +38,9 @@ namespace AdventOfCode.Tests
 
         public static Passport FromBatchFile(IEnumerable<string> fields)
         {
-            fields = string.Join(' ', fields).Split(' ');
+            var allFields = string.Join(' ', fields).Split(' ');
 
-            var keyValues = fields.ToDictionary(
+            var keyValues = allFields.ToDictionary(
                 f => f.Split(':').First(),
                 f => f.Split(':').Last());
 
@@ -42,7 +49,12 @@ namespace AdventOfCode.Tests
 
         public bool IsValid()
         {
-            return _fields.Count == 8 || (_fields.Count == 7 && !_fields.TryGetValue("cid", out _));
+            return RequiredFields.All(f => _fields.ContainsKey(f));
+        }
+
+        public override string ToString()
+        {
+            return _fields.Aggregate(new StringBuilder(), (builder, kvp) => builder.AppendFormat("{0}:{1} ", kvp.Key, kvp.Value)).ToString();
         }
     }
 
@@ -51,13 +63,21 @@ namespace AdventOfCode.Tests
         [Fact]
         public void Foo()
         {
+            var input = PuzzleInput;
+
             var passportFields = new List<string>();
-            var validPassports = 0;
-            foreach (var line in PuzzleInput)
+            int validPassports = 0, totalPassports = 0;
+            foreach (var line in input)
             {
-                if (line == string.Empty)
+                if (line == string.Empty || line == input.Last())
                 {
+                    if (line == input.Last())
+                    {
+                        passportFields.Add(line);
+                    }
+
                     var passport = Passport.FromBatchFile(passportFields);
+                    totalPassports++;
                     if (passport.IsValid()) validPassports++;
 
                     passportFields = new List<string>();
@@ -67,8 +87,15 @@ namespace AdventOfCode.Tests
                 passportFields.Add(line);
             }
 
-            Assert.True(validPassports > 205);
-            Assert.Equal(205, validPassports);
+            if (input.SequenceEqual(SampleInput))
+            {
+                Assert.Equal(2, validPassports);
+                return;
+            }
+
+            Assert.Equal(257, totalPassports);
+            Assert.True(validPassports > 205, $"Number of valid passports ({validPassports}) is too low.");
+            Assert.Equal(206, validPassports);
         }
 
         public IEnumerable<string> SampleInput => new[]
