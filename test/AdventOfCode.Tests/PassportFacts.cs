@@ -1,15 +1,92 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace AdventOfCode.Tests
 {
+    public class Passport
+    {
+        private readonly IDictionary<string, string> _fields;
+
+        public string BirthYear => _fields["byr"];
+
+        public string IssueYear => _fields["iyr"];
+
+        public string ExpirationYear => _fields["eyr"];
+
+        public string Height => _fields["hgt"];
+
+        public string HairColour => _fields["hcl"];
+
+        public string EyeColour => _fields["ecl"];
+
+        public string PassportId => _fields["pid"];
+
+        public string CountryId => _fields["cid"];
+
+        private Passport(IDictionary<string, string> fields)
+        {
+            _fields = fields;
+        }
+
+        public static Passport FromBatchFile(IEnumerable<string> fields)
+        {
+            fields = string.Join(' ', fields).Split(' ');
+
+            var keyValues = fields.ToDictionary(
+                f => f.Split(':').First(),
+                f => f.Split(':').Last());
+
+            return new Passport(keyValues);
+        }
+
+        public bool IsValid()
+        {
+            return _fields.Count == 8 || (_fields.Count == 7 && !_fields.TryGetValue("cid", out _));
+        }
+    }
+
     public class PassportFacts
     {
         [Fact]
         public void Foo()
         {
+            var passportFields = new List<string>();
+            var validPassports = 0;
+            foreach (var line in PuzzleInput)
+            {
+                if (line == string.Empty)
+                {
+                    var passport = Passport.FromBatchFile(passportFields);
+                    if (passport.IsValid()) validPassports++;
 
+                    passportFields = new List<string>();
+                    continue;
+                }
+
+                passportFields.Add(line);
+            }
+
+            Assert.True(validPassports > 205);
+            Assert.Equal(205, validPassports);
         }
+
+        public IEnumerable<string> SampleInput => new[]
+        {
+            "ecl:gry pid:860033327 eyr:2020 hcl:#fffffd",
+            "byr:1937 iyr:2017 cid:147 hgt:183cm",
+            "",
+            "iyr:2013 ecl:amb cid:350 eyr:2023 pid:028048884",
+            "hcl:#cfa07d byr:1929",
+            "",
+            "hcl:#ae17e1 iyr:2013",
+            "eyr:2024",
+            "ecl:brn pid:760753108 byr:1931",
+            "hgt:179cm",
+            "",
+            "hcl:#cfa07d eyr:2025 pid:166559648",
+            "iyr:2011 ecl:brn hgt:59in"
+        };
 
         public IEnumerable<string> PuzzleInput => new[]
         {
