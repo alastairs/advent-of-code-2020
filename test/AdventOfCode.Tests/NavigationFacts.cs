@@ -13,7 +13,7 @@ namespace AdventOfCode.Tests
         [Theory, MemberData(nameof(Routes))]
         public void CountTrees(int right, int down, int numberOfTrees)
         {
-            var input = PuzzleInput.ToArray();
+            var input = SampleInput.ToArray();
 
             int rowIndex = 0, charIndex = 0, treeCount = 0;
             while (rowIndex < input.Length)
